@@ -1,0 +1,110 @@
+--Removed data that was not needed for analysis and duplicates by creating new table
+CREATE TABLE crime.austinsorted AS
+SELECT DISTINCT timestamp, primary_type, zipcode
+FROM `my-data-project1234-360322.crime.austin`
+--To organize crime data by location, zip code was used for Austin and
+CREATE TABLE crime.chicagosorted AS
+SELECT DISTINCT date, community_area, primary_type
+FROM `my-data-project1234-360322.crime.chicago`
+--To organize crime data by location, community area number was used for Chicago. Unfortunately, zipcode was not available in Chicago data
+--Checked for null or missing data in both tables
+SELECT * 
+FROM `my-data-project1234-360322.crime.chicagosorted`
+WHERE date is null
+SELECT * 
+FROM `my-data-project1234-360322.crime.chicagosorted`
+WHERE primary_type is null
+SELECT * 
+FROM `my-data-project1234-360322.crime.chicagosorted`
+WHERE primary_type=" "
+SELECT * 
+FROM `my-data-project1234-360322.crime.chicagosorted`
+WHERE community_area is null
+SELECT * 
+FROM `my-data-project1234-360322.crime.chicagosorted`
+WHERE community_area=" "
+SELECT *
+FROM `my-data-project1234-360322.crime.austinsorted`
+WHERE date is null
+SELECT * 
+FROM `my-data-project1234-360322.crime.austinsorted`
+WHERE primary_type is null
+SELECT * 
+FROM `my-data-project1234-360322.crime.austinsorted`
+WHERE primary_type=" "
+SELECT * 
+FROM `my-data-project1234-360322.crime.austinsorted`
+WHERE zipcode is null
+SELECT * 
+FROM `my-data-project1234-360322.crime.austinsorted`
+WHERE zipcode=" "
+—-seperated time column into date and time using CAST
+SELECT address, primary_type, zipcode, CAST(timestamp as DATE) AS Date, CAST (timestamp as TIME) AS Time
+FROM `my-data-project1234-360322.crime.austinsorted`
+GROUP BY address, primary_type, zipcode, Time, Date
+SELECT community_area,primary_type, CAST(date as DATE) AS Date, CAST (date as TIME) AS Time
+FROM `my-data-project1234-360322.crime.chicago`
+GROUP BY primary_type, community_area, Time, Date
+--Identified number of crimes committed by zipcode/community area
+SELECT zipcode, COUNT(zipcode) as crimes_in_zipcode
+FROM `my-data-project1234-360322.crime.austinsorted`
+WHERE zipcode is not null
+GROUP BY zipcode
+ORDER BY crimes_in_zipcode
+SELECT community_area, COUNT(community_area) as crimes_in_community_area
+FROM `my-data-project1234-360322.crime.chicagosorted`
+WHERE community_area is not null
+GROUP BY community_area
+ORDER BY crimes_in_community_area
+--identified percentage of total crime
+SELECT zipcode,(crimes_in_zipcode/110339)*100 AS PercentofTotalCrime
+FROM `my-data-project1234-360322.crime.austinbyzip`
+GROUP BY zipcode, crimes_in_zipcode
+ORDER BY PercentofTotalCrime
+--Separated date in year, month and day
+SELECT  
+EXTRACT(Year FROM Date) As year,
+EXTRACT(Month FROM Date) AS month,
+EXTRACT (Day FROM Date) AS Day
+FROM `my-data-project1234-360322.crime.austinsorted`
+--identified year with highest crime
+SELECT year, COUNT(year)
+FROM `my-data-project1234-360322.crime.DateAustinExtracted`
+GROUP BY year
+SELECT year, COUNT(year)
+FROM `my-data-project1234-360322.crime.DateChicagoExtracted`
+GROUP BY year
+--identified months with highest crime
+SELECT month, COUNT(month) AS CrimesperMonth
+FROM `my-data-project1234-360322.crime.DateAustinExtracted`
+GROUP BY month
+ORDER BY CrimesperMonth DESC
+SELECT month, COUNT(month) AS CrimesperMonth
+FROM `my-data-project1234-360322.crime.DateAustinExtracted`
+GROUP BY month
+ORDER BY CrimesperMonth DESC
+--identified days within a month that have highest crime
+SELECT Day, COUNT(Day) AS CrimesperDay
+FROM `my-data-project1234-360322.crime.DateAustinExtracted`
+GROUP BY Day
+ORDER BY CrimesperDay DESC
+SELECT Day, COUNT(Day) AS CrimesperDay
+FROM `my-data-project1234-360322.crime.DateChicagoExtracted`
+GROUP BY Day
+ORDER BY CrimesperDay DESC
+--identified the types of crimes that occur the most
+SELECT primary_type, COUNT(primary_type) as NumberofTimesCommitted
+FROM `my-data-project1234-360322.crime.chicagosorted`
+Group By primary_type
+Order By NumberofTimesCommitted DESC
+SELECT primary_type, COUNT(primary_type) as NumberofTimesCommitted
+FROM `my-data-project1234-360322.crime.austinsorted`
+Group By primary_type
+Order By NumberofTimesCommitted DESC
+--combined the two tables
+SELECT primary_type,zipcode, date, time
+FROM `my-data-project1234-360322.crime.austinsorted`
+UNION ALL
+SELECT primary_type, community_area, date, time
+FROM `my-data-project1234-360322.crime.chicagosorted`
+ 
