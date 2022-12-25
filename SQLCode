@@ -68,43 +68,43 @@ EXTRACT(Month FROM Date) AS month,
 EXTRACT (Day FROM Date) AS Day
 FROM `my-data-project1234-360322.crime.austinsorted`
 --identified year with highest crime
-SELECT year, COUNT(year)
+SELECT year, COUNT(year) AS TotalCrime
 FROM `my-data-project1234-360322.crime.DateAustinExtracted`
 GROUP BY year
-SELECT year, COUNT(year)
-FROM `my-data-project1234-360322.crime.DateChicagoExtracted`
+SELECT year, COUNT(year) AS TotalCrime
+FROM `my-data-project1234-360322.crime.DateExtractedChicago`
 GROUP BY year
+ORDER BY year
 --identified months with highest crime
 SELECT month, COUNT(month) AS CrimesperMonth
 FROM `my-data-project1234-360322.crime.DateAustinExtracted`
 GROUP BY month
 ORDER BY CrimesperMonth DESC
 SELECT month, COUNT(month) AS CrimesperMonth
-FROM `my-data-project1234-360322.crime.DateAustinExtracted`
+FROM `my-data-project1234-360322.crime.DateExtractedChicago``
 GROUP BY month
 ORDER BY CrimesperMonth DESC
---identified days within a month that have highest crime
-SELECT Day, COUNT(Day) AS CrimesperDay
+--Identified the percent of crime per month
+SELECT month, (CrimesperMonth/110856)*100 AS PercentofTotalCrime
+FROM(SELECT month, COUNT(month) AS CrimesperMonth
 FROM `my-data-project1234-360322.crime.DateAustinExtracted`
-GROUP BY Day
-ORDER BY CrimesperDay DESC
-SELECT Day, COUNT(Day) AS CrimesperDay
-FROM `my-data-project1234-360322.crime.DateChicagoExtracted`
-GROUP BY Day
-ORDER BY CrimesperDay DESC
---identified the types of crimes that occur the most
-SELECT primary_type, COUNT(primary_type) as NumberofTimesCommitted
+GROUP BY month)
+GROUP BY month, CrimesperMonth
+ORDER BY PercentofTotalCrime DESC
+SELECT month, (CrimesperMonth/7692760)*100 AS PercentofTotalCrime
+FROM(SELECT month, COUNT(month) AS CrimesperMonth
+FROM `my-data-project1234-360322.crime.ChicagoExtractedDate`
+GROUP BY month)
+GROUP BY month, CrimesperMonth
+ORDER BY PercentofTotalCrime DESC
+--identified the types of crimes that occur the most by percent
+SELECT primary_type,(NumberofTimesRecorded/7692760)*100 AS PercentofTotalCrimes 
+FROM(SELECT primary_type, COUNT(primary_type) as NumberofTimesRecorded
 FROM `my-data-project1234-360322.crime.chicagosorted`
-Group By primary_type
-Order By NumberofTimesCommitted DESC
+Group By primary_type)
+GROUP BY primary_type, NumberofTimesRecorded
+Order By PercentofTotalCrimes DESC
 SELECT primary_type, COUNT(primary_type) as NumberofTimesCommitted
 FROM `my-data-project1234-360322.crime.austinsorted`
 Group By primary_type
 Order By NumberofTimesCommitted DESC
---combined the two tables
-SELECT primary_type,zipcode, date, time
-FROM `my-data-project1234-360322.crime.austinsorted`
-UNION ALL
-SELECT primary_type, community_area, date, time
-FROM `my-data-project1234-360322.crime.chicagosorted`
- 
